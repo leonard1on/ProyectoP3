@@ -1,0 +1,12 @@
+ Material 1               | Material 2                
+                          |                           
+Choose Type:     Kopemon  |Choose Type:     Stone          
+Choose Material: Veve     |Choose Material: Fire Stone
+              ______
+             |  ____|       _____    
+             | |__  _   _  | ..__|  _____
+             |  __|| | | | |_' __  /  __ \
+             | |   | |_| |  __:. ||  ____/
+             |_|   |_____| |_____| \_____|
+
+           
