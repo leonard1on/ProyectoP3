@@ -99,3 +99,8 @@ bool Water::Accuracy(int accuracy){
   }
   return hit;
 }
+
+Water::~Water(){
+  delete normal;
+  delete especial;
+}

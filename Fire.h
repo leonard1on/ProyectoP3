@@ -21,4 +21,5 @@ public:
   void Special(Kopemon*);
   void Normal(Kopemon*);
   bool Accuracy(int);
+  ~Fire();
 };

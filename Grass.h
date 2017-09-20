@@ -22,4 +22,5 @@ class Grass : public Kopemon{
     void Special(Kopemon*);
     void Normal(Kopemon*);
     bool Accuracy(int);
+    ~Grass();
 };

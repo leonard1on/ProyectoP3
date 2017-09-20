@@ -69,3 +69,7 @@ bool Electric::Accuracy(int accuracy){
   }
   return hit;
 }
+
+Electric::~Electric(){
+  delete normal;
+}

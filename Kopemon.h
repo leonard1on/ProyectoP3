@@ -2,9 +2,10 @@
 #include <string>
 #include "Attack.h"
 #include "Offensive.h"
+#include "Object.h"
 using namespace std;
 
-class Kopemon{
+class Kopemon : public Object{
 protected:
   string name;
   int hp;
@@ -13,7 +14,7 @@ protected:
 public:
   Kopemon();
   Kopemon (string, int);
-
+  virtual ~Kopemon();
   //Mutadores
   virtual string getNombre();
   virtual int getHp();

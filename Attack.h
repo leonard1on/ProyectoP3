@@ -9,4 +9,5 @@ public:
   Attack (string);
   string getName();
   void setName(string);
+  ~Attack();
 };

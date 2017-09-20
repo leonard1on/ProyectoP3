@@ -40,8 +40,8 @@ void Grass::Damage(Kopemon* kopemon){
 void Grass::Special(Kopemon* kopemon){
   int ataque=especial->getEffect();
   hp=hp+especial->getEffect();
-  if (hp>120) {
-    hp=120;
+  if (hp>150) {
+    hp=150;
   }
 
   if (normal->getDamage()>10) {
@@ -68,8 +68,8 @@ void Grass::Special(Kopemon* kopemon){
 void Grass::Normal(Kopemon* kopemon){
   int ataque=normal->getDamage();
   hp=hp+20;
-  if (hp>120) {
-    hp=120;
+  if (hp>150) {
+    hp=150;
   }
 
   if (typeid(*kopemon)==typeid(Water)) {
@@ -95,4 +95,9 @@ bool Grass::Accuracy(int accuracy){
     hit=false;
   }
   return hit;
+}
+
+Grass::~Grass(){
+  delete normal;
+  delete especial;
 }

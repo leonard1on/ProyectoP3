@@ -13,4 +13,5 @@ class Offensive : public Attack{
     int getAccuracy();
     void setDamage(int);
     void setAccuracy(int);
+    ~Offensive();
 };

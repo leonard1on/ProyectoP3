@@ -23,3 +23,7 @@ void Offensive::setDamage(int pDamage){
 void Offensive::setAccuracy(int pAccuracy){
   accuracy=pAccuracy;
 }
+
+Offensive::~Offensive(){
+
+}

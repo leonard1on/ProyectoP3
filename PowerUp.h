@@ -10,4 +10,5 @@ class PowerUp : public Attack{
     PowerUp (int, string);
     int getEffect();
     void setEffect(int);
+    ~PowerUp();
 };

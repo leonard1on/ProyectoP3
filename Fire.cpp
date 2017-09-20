@@ -74,8 +74,6 @@ void Fire::Normal(Kopemon* kopemon){
     ataque=0;
   }
 
-  cout<<ataque;
-
   kopemon->setHp(kopemon->getHp()-ataque);
 
   if (typeid(*kopemon)==typeid(Water)) {
@@ -94,4 +92,8 @@ bool Fire::Accuracy(int accuracy){
     hit=false;
   }
   return hit;
+}
+Fire::~Fire(){
+  delete normal;
+  delete especial;
 }

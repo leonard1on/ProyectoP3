@@ -6,7 +6,7 @@
 #include <typeinfo>
 using namespace std;
 
-Kopemon::Kopemon(){
+Kopemon::Kopemon() : Object(){
 
 }
 
@@ -68,4 +68,8 @@ void Kopemon::Revive(Kopemon* kopemon){
 
 bool Kopemon::Accuracy(int accuracy){
   return true;
+}
+
+Kopemon::~Kopemon(){
+
 }

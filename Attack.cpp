@@ -11,3 +11,7 @@ string Attack::getName(){
 void Attack::setName(string pName){
   name=pName;
 }
+
+Attack::~Attack(){
+
+}

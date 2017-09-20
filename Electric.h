@@ -21,4 +21,5 @@ class Electric : public Kopemon{
     void Special(Kopemon*);
     void Normal(Kopemon*);
     bool Accuracy(int);
+    ~Electric();
 };

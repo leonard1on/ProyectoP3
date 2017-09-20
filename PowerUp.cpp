@@ -14,3 +14,7 @@ int PowerUp::getEffect(){
 void PowerUp::setEffect(int pEffect){
   effect=pEffect;
 }
+
+PowerUp::~PowerUp(){
+  
+}

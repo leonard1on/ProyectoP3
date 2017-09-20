@@ -26,4 +26,5 @@ class Water : public Kopemon{
     void Normal(Kopemon*);
     void Revive(Kopemon*);
     bool Accuracy(int);
+    ~Water();
 };
