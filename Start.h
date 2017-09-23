@@ -18,11 +18,12 @@ using namespace std;
 class Start {
 public:
   void run();
-  vector<Kopemon*> title();
-  string inicio();
-  void explicacion(string);
-  vector<Kopemon*> load();
-  vector<Element*> fillElements();
-  vector<Animal*> fillAnimals();
+  vector<Kopemon*> title(); //Title Screen
+  string inicio(); //Professor Maple
+  void explicacion(string); // Tutorial
+  vector<Kopemon*> load(); //Load kopemons
+  vector<Element*> fillElements(); //Create elements
+  vector<Animal*> fillAnimals(); //Create Animals
+  void battle(vector<Kopemon*>); //Battle
   ~Start();
 };

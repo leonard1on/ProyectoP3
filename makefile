@@ -1,10 +1,10 @@
-main: main.o Start.o Kopemon.o Grass.o Fire.o Water.o Electric.o Attack.o PowerUp.o Offensive.o Scanner.o Material.o Stone.o Element.o Object.o Animal.o
-	g++ main.o Start.o Kopemon.o Grass.o Fire.o Water.o Electric.o Attack.o PowerUp.o Offensive.o Scanner.o Material.o Stone.o Element.o Object.o Animal.o -lncurses -o main
+main: main.o Start.o Kopemon.o Grass.o Fire.o Water.o Electric.o Attack.o PowerUp.o Offensive.o Scanner.o Material.o Stone.o Element.o Object.o Animal.o Music.o SoundFX.o
+	g++ main.o Start.o Kopemon.o Grass.o Fire.o Water.o Electric.o Attack.o PowerUp.o Offensive.o Scanner.o Material.o Stone.o Element.o Object.o Animal.o Music.o SoundFX.o -lSDL -lSDL_mixer -lncurses -o main
 
 main.o: main.cpp Start.h
 	g++ -c main.cpp
 
-Start.o: Start.cpp Start.h Kopemon.h Fire.h Grass.h Electric.h Water.h Attack.h Offensive.h PowerUp.h Scanner.h Material.h Element.h Stone.h Object.h Animal.h
+Start.o: Start.cpp Start.h Kopemon.h Fire.h Grass.h Electric.h Water.h Attack.h Offensive.h PowerUp.h Scanner.h Material.h Element.h Stone.h Object.h Animal.h Music.h
 	g++ -c Start.cpp
 
 Object.o: Object.cpp Object.h
@@ -48,3 +48,9 @@ Element.o: Element.cpp Element.h Material.h
 
 Animal.o: Animal.cpp Animal.h Object.h
 	g++ -c Animal.cpp
+
+Music.o: Music.cpp Music.h
+	g++ -c Music.cpp
+
+SoundFX.o: SoundFX.cpp SoundFX.h
+	g++ -c SoundFX.cpp	

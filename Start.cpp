@@ -21,16 +21,23 @@
 #include <vector>
 #include <iostream>
 #include <typeinfo>
+#include "Music.h"
+#include "SoundFX.h"
+#include "SDL/SDL.h"
+#include "SDL/SDL_mixer.h"
 #define maxX 150
 #define maxY 38
 
 using namespace std;
 
 void Start::run(){
-  vector<Kopemon*> kopemons=load();
+  vector<Kopemon*> kopemons;
   vector<Element*> elements=fillElements();
   vector<Animal*> animals=fillAnimals();
   vector<Stone*> stones;
+  if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ){
+  }
+  SoundFX success("./SoundFX/Success.wav");
   //stones.push_back(new Stone("Fire Stone", "Red"));
   initscr();
   noecho();
@@ -38,6 +45,7 @@ void Start::run(){
   start_color();
   kopemons=title();
   string piedra="";
+  //NEW GAME
   if (kopemons.size()==0) {
     piedra=inicio();
     Kopemon* veev=new Kopemon("Veev", 60);
@@ -53,11 +61,17 @@ void Start::run(){
     }
   }
 
-
+  int choice=0;
+  int seleccion=0;
   init_pair(4, COLOR_GREEN, COLOR_BLACK);
   init_pair(5, COLOR_WHITE, COLOR_MAGENTA);
+  init_pair(6, COLOR_CYAN, COLOR_BLACK);
+  init_pair(7, COLOR_RED, COLOR_BLACK);
+  init_pair(8, COLOR_YELLOW, COLOR_BLACK);
 
   //Fusion Lab
+  Music music("./Music/Fusion.wav");
+  music.play();
   Scanner fusion("./Dibujos/Fusion.txt");
   attron(COLOR_PAIR(4));
   attron(A_BOLD);
@@ -87,9 +101,9 @@ void Start::run(){
   wrefresh(right);
   keypad(left, true);
   keypad(right, true);
-
+  int salir=kopemons.size();
   //Empieza las fusiones
-  while(true) {
+  while(salir!=16) {
     Material2.wprint(right,1,4);
     wrefresh(right);
     Material1.wprint(left,1,5);
@@ -98,20 +112,27 @@ void Start::run(){
     Object* derecha;
     Object* nuevo;
 
-//Elegir Material de la Izquierda-----------------------------------------------
+    //Elegir Material de la Izquierda-----------------------------------------------
     mvwprintw(left, 8, 5, "Which type of material are you going to use?");
-    string choices[4] = {"Element", "Animal", "Kopemon", "Stone"};
-    int choice=0;
-    int seleccion=0;
+    string choices[5] = {"Element", "Animal", "Kopemon", "Stone", "Leave"};
+    choice=0;
+    seleccion=0;
 
     //Seleccion de Material
     while (choice!=10) {
-      for (size_t i = 0; i < 4; i++) {
-        if (i==seleccion)
-          wattron(left, A_REVERSE);
+      for (size_t i = 0; i < 5; i++) {
+        if(i<4){
+          if (i==seleccion)
+            wattron(left, A_REVERSE);
             mvwprintw(left, i+10, 5, choices[i].c_str());
-          wattroff(left, A_REVERSE);
+            wattroff(left, A_REVERSE);
+        }else{
+          if (i==seleccion)
+            wattron(left, A_REVERSE);
+            mvwprintw(left, i+6, 20, choices[i].c_str());
+            wattroff(left, A_REVERSE);
         }
+      }
       choice=wgetch(left);
 
       switch (choice) {
@@ -124,8 +145,8 @@ void Start::run(){
 
         case KEY_DOWN:{
           seleccion++;
-          if (seleccion>3) {
-            seleccion=3;
+          if (seleccion>4) {
+            seleccion=4;
           }
         }break;
 
@@ -133,20 +154,171 @@ void Start::run(){
           break;
       }
     }
+    if(seleccion!=4){
+      //seleccion de elements
+      if (seleccion==0) {
+        choice = 0;
+        seleccion=0;
+        mvwprintw(left, 15, 5, "Elements");
+        while (choice!=10) {
+          for (size_t i = 0; i < elements.size(); i++) {
+            if (i==seleccion)
+              wattron(left, A_REVERSE);
+                mvwprintw(left, i+16, 5, elements.at(i)->show().c_str());
+              wattroff(left, A_REVERSE);
+            }
+          choice=wgetch(left);
 
-    //seleccion de elements
-    if (seleccion==0) {
-      choice = 0;
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>elements.size()-1) {
+                seleccion=elements.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        izquierda=elements.at(seleccion);
+
+      //seleccion de animals
+      }else if(seleccion==1){
+        choice = 0;
+        seleccion=0;
+        mvwprintw(left, 15, 5, "Animals");
+        while (choice!=10) {
+          for (size_t i = 0; i < animals.size(); i++) {
+            if (i==seleccion)
+              wattron(left, A_REVERSE);
+                mvwprintw(left, i+16, 5, animals.at(i)->getNombre().c_str());
+              wattroff(left, A_REVERSE);
+            }
+          choice=wgetch(left);
+
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>animals.size()-1) {
+                seleccion=animals.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        izquierda=animals.at(seleccion);
+
+      //seleccion de Kopemons
+      }else if(seleccion==2){
+        mvwprintw(left, 15, 5, "Kopemons");
+        choice = 0;
+        seleccion=0;
+        while (choice!=10) {
+          for (size_t i = 0; i < kopemons.size(); i++) {
+            if (i<8){
+              if(i==seleccion)
+              wattron(left, A_REVERSE);
+                mvwprintw(left, i+16, 5, kopemons.at(i)->getNombre().c_str());
+              wattroff(left, A_REVERSE);
+            }else{
+              if(i==seleccion)
+              wattron(left, A_REVERSE);
+                mvwprintw(left, i+8, 20, kopemons.at(i)->getNombre().c_str());
+              wattroff(left, A_REVERSE);
+            }
+          }
+          choice=wgetch(left);
+
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>kopemons.size()-1) {
+                seleccion=kopemons.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        izquierda=kopemons.at(seleccion);
+
+        //seleccion de Stones
+      }else{
+        mvwprintw(left, 15, 5, "Stones");
+        choice = 0;
+        seleccion=0;
+        while (choice!=10) {
+          for (size_t i = 0; i < stones.size(); i++) {
+            if (i==seleccion)
+              wattron(left, A_REVERSE);
+                mvwprintw(left, i+16, 5, stones.at(i)->show().c_str());
+              wattroff(left, A_REVERSE);
+            }
+          choice=wgetch(left);
+
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>stones.size()-1) {
+                seleccion=stones.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        izquierda=stones.at(seleccion);
+      }
+      //------------------------------------------------------------------------------
+
+      //Elegir Material de la Derecha-----------------------------------------------
+      mvwprintw(right, 8, 5, "Which type of material are you going to use?");
+      string choicess[4] = {"Element", "Animal", "Kopemon", "Stone"};
+      choice=0;
       seleccion=0;
-      mvwprintw(left, 15, 5, "Elements");
+
+      //Seleccion de Material
       while (choice!=10) {
-        for (size_t i = 0; i < elements.size(); i++) {
+        for (size_t i = 0; i < 4; i++) {
           if (i==seleccion)
-            wattron(left, A_REVERSE);
-              mvwprintw(left, i+16, 5, elements.at(i)->show().c_str());
-            wattroff(left, A_REVERSE);
+            wattron(right, A_REVERSE);
+              mvwprintw(right, i+10, 5, choicess[i].c_str());
+            wattroff(right, A_REVERSE);
           }
-        choice=wgetch(left);
+        choice=wgetch(right);
 
         switch (choice) {
           case KEY_UP:{
@@ -158,8 +330,8 @@ void Start::run(){
 
           case KEY_DOWN:{
             seleccion++;
-            if (seleccion>elements.size()-1) {
-              seleccion=elements.size()-1;
+            if (seleccion>3) {
+              seleccion=3;
             }
           }break;
 
@@ -167,137 +339,337 @@ void Start::run(){
             break;
         }
       }
-      izquierda=elements.at(seleccion);
 
-    //seleccion de animals
-    }else if(seleccion==1){
-      choice = 0;
-      seleccion=0;
-      mvwprintw(left, 15, 5, "Animals");
-      while (choice!=10) {
-        for (size_t i = 0; i < animals.size(); i++) {
-          if (i==seleccion)
-            wattron(left, A_REVERSE);
-              mvwprintw(left, i+16, 5, animals.at(i)->getNombre().c_str());
-            wattroff(left, A_REVERSE);
-          }
-        choice=wgetch(left);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
+      //seleccion de elements
+      if (seleccion==0) {
+        choice = 0;
+        seleccion=0;
+        mvwprintw(right, 15, 5, "Elements");
+        while (choice!=10) {
+          for (size_t i = 0; i < elements.size(); i++) {
+            if (i==seleccion)
+              wattron(right, A_REVERSE);
+                mvwprintw(right, i+16, 5, elements.at(i)->show().c_str());
+              wattroff(right, A_REVERSE);
             }
-          }break;
+          choice=wgetch(right);
 
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>animals.size()-1) {
-              seleccion=animals.size()-1;
-            }
-          }break;
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
 
-          default:
-            break;
-        }
-      }
-      izquierda=animals.at(seleccion);
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>elements.size()-1) {
+                seleccion=elements.size()-1;
+              }
+            }break;
 
-    //seleccion de Kopemons
-    }else if(seleccion==2){
-      mvwprintw(left, 15, 5, "Kopemons");
-      choice = 0;
-      seleccion=0;
-      while (choice!=10) {
-        for (size_t i = 0; i < kopemons.size(); i++) {
-          if (i<8){
-            if(i==seleccion)
-            wattron(left, A_REVERSE);
-              mvwprintw(left, i+16, 5, kopemons.at(i)->getNombre().c_str());
-            wattroff(left, A_REVERSE);
-          }else{
-            if(i==seleccion)
-            wattron(left, A_REVERSE);
-              mvwprintw(left, i+8, 20, kopemons.at(i)->getNombre().c_str());
-            wattroff(left, A_REVERSE);
+            default:
+              break;
           }
         }
-        choice=wgetch(left);
+        derecha=elements.at(seleccion);
 
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
+      //seleccion de animals
+      }else if(seleccion==1){
+        choice = 0;
+        seleccion=0;
+        mvwprintw(right, 15, 5, "Animals");
+        while (choice!=10) {
+          for (size_t i = 0; i < animals.size(); i++) {
+            if (i==seleccion)
+              wattron(right, A_REVERSE);
+                mvwprintw(right, i+16, 5, animals.at(i)->getNombre().c_str());
+              wattroff(right, A_REVERSE);
             }
-          }break;
+          choice=wgetch(right);
 
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>kopemons.size()-1) {
-              seleccion=kopemons.size()-1;
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>animals.size()-1) {
+                seleccion=animals.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        derecha=animals.at(seleccion);
+
+      //seleccion de Kopemons
+      }else if(seleccion==2){
+        mvwprintw(right, 15, 5, "Kopemons");
+        choice = 0;
+        seleccion=0;
+        while (choice!=10) {
+          for (size_t i = 0; i < kopemons.size(); i++) {
+            if (i<8){
+              if(i==seleccion)
+              wattron(right, A_REVERSE);
+                mvwprintw(right, i+16, 5, kopemons.at(i)->getNombre().c_str());
+              wattroff(right, A_REVERSE);
+            }else{
+              if(i==seleccion)
+              wattron(right, A_REVERSE);
+                mvwprintw(right, i+8, 20, kopemons.at(i)->getNombre().c_str());
+              wattroff(right, A_REVERSE);
             }
-          }break;
+          }
+          choice=wgetch(right);
 
-          default:
-            break;
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>kopemons.size()-1) {
+                seleccion=kopemons.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        derecha=kopemons.at(seleccion);
+
+        //seleccion de Stones
+      }else{
+        mvwprintw(right, 15, 5, "Stones");
+        choice = 0;
+        seleccion=0;
+        while (choice!=10) {
+          for (size_t i = 0; i < stones.size(); i++) {
+            if (i==seleccion)
+              wattron(right, A_REVERSE);
+                mvwprintw(right, i+16, 5, stones.at(i)->show().c_str());
+              wattroff(right, A_REVERSE);
+            }
+          choice=wgetch(right);
+
+          switch (choice) {
+            case KEY_UP:{
+              seleccion--;
+              if (seleccion<0) {
+                seleccion=0;
+              }
+            }break;
+
+            case KEY_DOWN:{
+              seleccion++;
+              if (seleccion>stones.size()-1) {
+                seleccion=stones.size()-1;
+              }
+            }break;
+
+            default:
+              break;
+          }
+        }
+        derecha=stones.at(seleccion);
+      }
+      //------------------------------------------------------------------------------
+      Object* creacion=*izquierda+derecha;
+      string nombre="";
+      bool repetido=false;
+      move(20,0);
+      clrtoeol();
+      //Object Fire
+      if (typeid(*creacion)==typeid(Fire)) {
+        nombre=dynamic_cast<Fire*>(creacion)->getNombre();
+        for (int i = 0; i < kopemons.size(); i++) {
+          if (nombre==kopemons.at(i)->getNombre()) {
+            repetido=true;
+          }
+        }
+        if (!repetido) {
+          success.play();
+          attron(COLOR_PAIR(7));
+          mvprintw(20,62, "You created a: '%s'   ", nombre.c_str());
+          attroff(COLOR_PAIR(7));
+          kopemons.push_back(dynamic_cast<Fire*>(*izquierda+derecha));
         }
       }
-      izquierda=kopemons.at(seleccion);
+      //Object Water
+      if (typeid(*creacion)==typeid(Water)) {
+        nombre=dynamic_cast<Water*>(creacion)->getNombre();
+        for (int i = 0; i < kopemons.size(); i++) {
+          if (nombre==kopemons.at(i)->getNombre()) {
+            repetido=true;
+          }
+        }
+        if (!repetido) {
+          success.play();
+          attron(COLOR_PAIR(6));
+          mvprintw(20,62, "You created a: '%s'   ", nombre.c_str());
+          attroff(COLOR_PAIR(6));
+          kopemons.push_back(dynamic_cast<Water*>(*izquierda+derecha));
+        }
+      }
+      //Object Electric
+      if (typeid(*creacion)==typeid(Electric)) {
+        nombre=dynamic_cast<Electric*>(creacion)->getNombre();
+        for (int i = 0; i < kopemons.size(); i++) {
+          if (nombre==kopemons.at(i)->getNombre()) {
+            repetido=true;
+          }
+        }
+        if (!repetido) {
+          success.play();
+          attron(COLOR_PAIR(8));
+          mvprintw(20,62, "You created a: '%s'   ", nombre.c_str());
+          attroff(COLOR_PAIR(8));
+          kopemons.push_back(dynamic_cast<Electric*>(*izquierda+derecha));
+        }
+      }
+      //Object Grass
+      if (typeid(*creacion)==typeid(Grass)) {
+        nombre=dynamic_cast<Grass*>(creacion)->getNombre();
+        for (int i = 0; i < kopemons.size(); i++) {
+          if (nombre==kopemons.at(i)->getNombre()) {
+            repetido=true;
+          }
+        }
+        if (!repetido) {
+          success.play();
+          attron(COLOR_PAIR(4));
+          mvprintw(20,62, "You created a: '%s'   ", nombre.c_str());
+          attron(COLOR_PAIR(4));
+          kopemons.push_back(dynamic_cast<Grass*>(*izquierda+derecha));
+        }
+      }
+      //Object Stone
+      if (typeid(*creacion)==typeid(Stone)) {
+        nombre=dynamic_cast<Stone*>(creacion)->show();
+        for (int i = 0; i < stones.size(); i++) {
+          if (nombre==stones.at(i)->show()) {
+            repetido=true;
+          }
+        }
+        if (!repetido) {
+          success.play();
+          mvprintw(20,62, "You created a: '%s'   ", nombre.c_str());
+          stones.push_back(dynamic_cast<Stone*>(*izquierda+derecha));
+        }
+      }
 
-      //seleccion de Stones
+
+      delete creacion;
+      salir=kopemons.size();
     }else{
-      mvwprintw(left, 15, 5, "Stones");
-      choice = 0;
-      seleccion=0;
-      while (choice!=10) {
-        for (size_t i = 0; i < stones.size(); i++) {
-          if (i==seleccion)
-            wattron(left, A_REVERSE);
-              mvwprintw(left, i+16, 5, stones.at(i)->show().c_str());
-            wattroff(left, A_REVERSE);
-          }
-        choice=wgetch(left);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
-            }
-          }break;
-
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>stones.size()-1) {
-              seleccion=stones.size()-1;
-            }
-          }break;
-
-          default:
-            break;
-        }
-      }
-      izquierda=stones.at(seleccion);
+      salir=16;
     }
-//------------------------------------------------------------------------------
 
-//Elegir Material de la Derecha-----------------------------------------------
-    mvwprintw(right, 8, 5, "Which type of material are you going to use?");
-    string choicess[4] = {"Element", "Animal", "Kopemon", "Stone"};
-    choice=0;
-    seleccion=0;
+    refresh();
+    wrefresh(left);
+    werase(left);
+    werase(right);
+    if (kopemons.size()==16) {
+      Material2.wprint(right,1,4);
+      wrefresh(right);
+      Material1.wprint(left,1,5);
+      mvprintw(24, 61, "You've created every Kopemon!");
+      mvprintw(25, 67,       "Congratulations!");
+      refresh();
+      wrefresh(left);
+      wrefresh(right);
+      usleep(5000000);
+    }
+  }//End of while
+  music.halt();
+  delwin(left);
+  delwin(right);
+  clear();
+  refresh();
 
-    //Seleccion de Material
+  //Pelea
+  if (kopemons.size()==16) {
+    battle(kopemons);
+  }
+
+  //End
+  for (size_t i = 0; i < kopemons.size(); i++) {
+    delete kopemons.at(i);
+  }
+  kopemons.clear();
+  for (size_t i = 0; i < 4; i++) {
+    delete elements.at(i);
+    delete animals.at(i);
+  }
+  elements.clear();
+  animals.clear();
+  for (size_t i = 0; i < stones.size(); i++) {
+    delete stones.at(i);
+  }
+  stones.clear();
+  getch();
+  endwin();
+}
+
+void Start::battle(vector<Kopemon*> kopemons){
+  vector<Kopemon*> team1;
+  vector<Kopemon*> team2;
+  string location;
+
+  //Music
+  Music road("./Music/Road.wav");
+  road.play();
+
+  //Choose Kopemons Windows
+  WINDOW* list = newwin(maxY-11, 25, 2, 4);
+  keypad(list, true);
+  refresh();
+  wrefresh(list);
+
+  //My Team
+  WINDOW* team = newwin(5, maxX/3-6, 2, 31);
+  wrefresh(team);
+
+  //Choose your Kopemon Team
+  while(team1.size()!=3){
+    int choice=0;
+    int seleccion=0;
+
     while (choice!=10) {
-      for (size_t i = 0; i < 4; i++) {
-        if (i==seleccion)
-          wattron(right, A_REVERSE);
-            mvwprintw(right, i+10, 5, choicess[i].c_str());
-          wattroff(right, A_REVERSE);
-        }
-      choice=wgetch(right);
+      for (size_t i = 0; i < kopemons.size(); i++) {
+        if(i==seleccion)
+        wattron(list, A_REVERSE);
+        mvwprintw(list, i+5, 8, kopemons.at(i)->getNombre().c_str());
+        wattroff(list, A_REVERSE);
+
+        //Print All Titles and Kopemons
+        location="./Dibujos/"+kopemons.at(seleccion)->getNombre()+".txt";
+        Scanner kope(location);
+        erase();
+        kope.print(1, 78);
+        refresh();
+        box(list,0,0);
+        box(team,0,0);
+        mvwprintw(list, 2, 6,   "Create a Team!");
+        mvwprintw(list, 3, 4, "Choose 3 Kopemons");
+        mvwprintw(team, 1, 2, "My Team:");
+        wrefresh(team);
+      }
+      choice=wgetch(list);
 
       switch (choice) {
         case KEY_UP:{
@@ -309,8 +681,8 @@ void Start::run(){
 
         case KEY_DOWN:{
           seleccion++;
-          if (seleccion>3) {
-            seleccion=3;
+          if (seleccion>kopemons.size()-1) {
+            seleccion=kopemons.size()-1;
           }
         }break;
 
@@ -319,242 +691,69 @@ void Start::run(){
       }
     }
 
-    //seleccion de elements
-    if (seleccion==0) {
-      choice = 0;
-      seleccion=0;
-      mvwprintw(right, 15, 5, "Elements");
-      while (choice!=10) {
-        for (size_t i = 0; i < elements.size(); i++) {
-          if (i==seleccion)
-            wattron(right, A_REVERSE);
-              mvwprintw(right, i+16, 5, elements.at(i)->show().c_str());
-            wattroff(right, A_REVERSE);
-          }
-        choice=wgetch(right);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
-            }
-          }break;
-
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>elements.size()-1) {
-              seleccion=elements.size()-1;
-            }
-          }break;
-
-          default:
-            break;
-        }
-      }
-      derecha=elements.at(seleccion);
-
-    //seleccion de animals
-    }else if(seleccion==1){
-      choice = 0;
-      seleccion=0;
-      mvwprintw(right, 15, 5, "Animals");
-      while (choice!=10) {
-        for (size_t i = 0; i < animals.size(); i++) {
-          if (i==seleccion)
-            wattron(right, A_REVERSE);
-              mvwprintw(right, i+16, 5, animals.at(i)->getNombre().c_str());
-            wattroff(right, A_REVERSE);
-          }
-        choice=wgetch(right);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
-            }
-          }break;
-
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>animals.size()-1) {
-              seleccion=animals.size()-1;
-            }
-          }break;
-
-          default:
-            break;
-        }
-      }
-      derecha=animals.at(seleccion);
-
-    //seleccion de Kopemons
-    }else if(seleccion==2){
-      mvwprintw(right, 15, 5, "Kopemons");
-      choice = 0;
-      seleccion=0;
-      while (choice!=10) {
-        for (size_t i = 0; i < kopemons.size(); i++) {
-          if (i<8){
-            if(i==seleccion)
-            wattron(right, A_REVERSE);
-              mvwprintw(right, i+16, 5, kopemons.at(i)->getNombre().c_str());
-            wattroff(right, A_REVERSE);
-          }else{
-            if(i==seleccion)
-            wattron(right, A_REVERSE);
-              mvwprintw(right, i+8, 20, kopemons.at(i)->getNombre().c_str());
-            wattroff(right, A_REVERSE);
-          }
-        }
-        choice=wgetch(right);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
-            }
-          }break;
-
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>kopemons.size()-1) {
-              seleccion=kopemons.size()-1;
-            }
-          }break;
-
-          default:
-            break;
-        }
-      }
-      derecha=kopemons.at(seleccion);
-
-      //seleccion de Stones
-    }else{
-      mvwprintw(right, 15, 5, "Stones");
-      choice = 0;
-      seleccion=0;
-      while (choice!=10) {
-        for (size_t i = 0; i < stones.size(); i++) {
-          if (i==seleccion)
-            wattron(right, A_REVERSE);
-              mvwprintw(right, i+16, 5, stones.at(i)->show().c_str());
-            wattroff(right, A_REVERSE);
-          }
-        choice=wgetch(right);
-
-        switch (choice) {
-          case KEY_UP:{
-            seleccion--;
-            if (seleccion<0) {
-              seleccion=0;
-            }
-          }break;
-
-          case KEY_DOWN:{
-            seleccion++;
-            if (seleccion>stones.size()-1) {
-              seleccion=stones.size()-1;
-            }
-          }break;
-
-          default:
-            break;
-        }
-      }
-      derecha=stones.at(seleccion);
+    //Kopemons to team
+    team1.push_back(kopemons.at(seleccion));
+    kopemons.erase(kopemons.begin()+seleccion);
+    for (size_t i = 0; i < team1.size(); i++) {
+      mvwprintw(team, 3, 2+(i*15), "%s", team1.at(i)->getNombre().c_str());
     }
-//------------------------------------------------------------------------------
-    Object* creacion=*izquierda+derecha;
-    string nombre;
-    bool repetido=false;
+    wrefresh(team);
+    werase(list);
+  }
+  //Erase everything
+  werase(list);
+  werase(team);
+  erase();
+  delwin(list);
+  delwin(team);
+  refresh();
+  road.halt();
+  int a=(int)' ';
+  int b=(int)'^';
+  int c=(int)'<';
+  //New stage
+  Music batalla("./Music/Battle.wav");
+  batalla.play();
+  usleep(400000);
+  WINDOW* hud=newwin(8,50,maxY-16,0);
+  WINDOW* texto=newwin(6, maxX-12, maxY-8,5);
 
-    //Object Fire
-    if (typeid(*creacion)==typeid(Fire)) {
-      nombre=dynamic_cast<Fire*>(creacion)->getNombre();
-      for (int i = 0; i < kopemons.size(); i++) {
-        if (nombre==kopemons.at(i)->getNombre()) {
-          repetido=true;
-        }
-      }
-      if (!repetido) {
-        kopemons.push_back(dynamic_cast<Fire*>(*izquierda+derecha));
-      }
+  for (size_t i = 0; i < maxY; i+=3) {
+    for (size_t j = 0; j < maxX; j+=3) {
+      mvprintw(i,j,"#");
+      mvprintw(i+1,j+1,"#");
+      mvprintw(i+2,j+2,"#");
+      usleep(5000);
+      refresh();
     }
-
-    if (typeid(*creacion)==typeid(Water)) {
-      nombre=dynamic_cast<Water*>(creacion)->getNombre();
-      for (int i = 0; i < kopemons.size(); i++) {
-        if (nombre==kopemons.at(i)->getNombre()) {
-          repetido=true;
-        }
-      }
-      if (!repetido) {
-        kopemons.push_back(dynamic_cast<Water*>(*izquierda+derecha));
-      }
-    }
-
-    if (typeid(*creacion)==typeid(Electric)) {
-      nombre=dynamic_cast<Electric*>(creacion)->getNombre();
-      for (int i = 0; i < kopemons.size(); i++) {
-        if (nombre==kopemons.at(i)->getNombre()) {
-          repetido=true;
-        }
-      }
-      if (!repetido) {
-        kopemons.push_back(dynamic_cast<Electric*>(*izquierda+derecha));
-      }
-    }
-
-    if (typeid(*creacion)==typeid(Grass)) {
-      nombre=dynamic_cast<Grass*>(creacion)->getNombre();
-      for (int i = 0; i < kopemons.size(); i++) {
-        if (nombre==kopemons.at(i)->getNombre()) {
-          repetido=true;
-        }
-      }
-      if (!repetido) {
-        kopemons.push_back(dynamic_cast<Grass*>(*izquierda+derecha));
-      }
-    }
-
-    if (typeid(*creacion)==typeid(Stone)) {
-      nombre=dynamic_cast<Stone*>(creacion)->show();
-      for (int i = 0; i < stones.size(); i++) {
-        if (nombre==stones.at(i)->show()) {
-          repetido=true;
-        }
-      }
-      if (!repetido) {
-        stones.push_back(dynamic_cast<Stone*>(*izquierda+derecha));
-      }
-    }
-
-    delete creacion;
+  }
+  erase();
+  refresh();
+  for (size_t i = 0; i < 90; i++) {
+    werase(hud);
+    delwin(hud);
+    erase();
     refresh();
-    wrefresh(left);
-//    getch();
-    werase(left);
-    werase(right);
-//    getch();
-  }//End of while
+    WINDOW* hud=newwin(8,50,maxY-16,i);
+    wborder(hud, a, 0, a, 0, a, b, c, 0);
+    box(texto,0,0);
+    wrefresh(hud);
+    wrefresh(texto);
+    usleep(30000);
+  }
 
-  //Pelea
-
-  /*Kopemon** team1=new Kopemon*[3];
-  team1[0]=kopemons.at(0);
-  team1[1]=kopemons.at(1);
-  team1[2]=kopemons.at(2);
-
-  cout<<team1[0]->getNombre()<<endl;
-  cout<<team1[1]->getNombre()<<endl;
-  cout<<team1[2]->getNombre()<<endl;*/
+  do {
 
 
+
+
+
+
+
+
+  } while(true);
   getch();
-  endwin();
+  batalla.halt();
 }
 
 vector<Kopemon*> Start::load(){
@@ -621,6 +820,8 @@ vector<Kopemon*> Start::load(){
 }
 
 void Start::explicacion(string stone){
+  Music music("./Music/Guide.wav");
+  music.play();
   //Scanners y colores
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
   init_pair(2, COLOR_RED, COLOR_BLACK);
@@ -699,10 +900,16 @@ void Start::explicacion(string stone){
   delete veev;
   delete tutorial;
   delete procedure;
+  music.halt();
   clear();
 }
 
 vector<Kopemon*> Start::title(){
+
+  Music music("./Music/1.wav");
+  SoundFX continueFX("./SoundFX/A.wav");
+  music.play();
+
   //Variables, Scanners y colores
   vector<Kopemon*> prueba;
   box(stdscr,0,0);
@@ -769,7 +976,6 @@ vector<Kopemon*> Start::title(){
         wattroff(menu, A_REVERSE);
       }
     choice=wgetch(menu);
-
     switch (choice) {
       case KEY_UP:{
         seleccion--;
@@ -789,6 +995,7 @@ vector<Kopemon*> Start::title(){
         break;
     }
   }
+
   if (seleccion==0 ) {
     printw("new Game");
   }
@@ -800,17 +1007,22 @@ vector<Kopemon*> Start::title(){
   if (seleccion==2) {
 
   }
+  continueFX.play();
 
   delete title;
   werase(menu);
   delwin(menu);
   clear();
   refresh();
+  music.halt();
   return prueba;
 }
 
 string Start::inicio(){
   //Scanners y colores
+  Music music("./Music/Maple.wav");
+  SoundFX continueFX("./SoundFX/A.wav");
+  music.play();
   init_pair(1, COLOR_YELLOW, COLOR_BLACK);
   Scanner* maple=new Scanner("./Dibujos/Maple.txt");
   Scanner* kipachu=new Scanner("./Dibujos/Kipachu.txt");
@@ -843,11 +1055,12 @@ string Start::inicio(){
   refresh();
 
   //Segundo Texto
-  mvwprintw(texto, 4,1, "[Press enter]");
+  mvwprintw(texto, 4,2, "[Press enter]");
   int enter=0;
   do {
     enter=wgetch(texto);
   } while(enter!=10);
+  continueFX.play();
   wclear(texto);
   box(texto,0,0);
   mvwprintw(texto, 1,2, "Your mission is to create all possible Kopemons so you can compete. You will need to combine elements with Kopemons to creat new Kope- ");
@@ -859,6 +1072,7 @@ string Start::inicio(){
   do {
     enter=wgetch(texto);
   } while(enter!=10);
+  continueFX.play();
 
   //Ventana de eleccion
   WINDOW* menu=newwin(8, 28, maxY/4, maxX-maxX/3-10);
@@ -907,6 +1121,7 @@ string Start::inicio(){
   clear();
   refresh();
   string eleccion=choices[seleccion];
+  music.halt();
   return eleccion;
 }
 
@@ -930,3 +1145,23 @@ vector<Element*> Start::fillElements(){
 
 Start::~Start(){
 }
+
+/*SoundFX challenger("./SoundFX/Challenger.wav");
+Scanner warning("./Dibujos/Warning.txt");
+challenger.play();
+for (size_t i = 0; i < 6; i++) {
+  clear();
+  refresh();
+  usleep(300000);
+  attron(COLOR_PAIR(7));
+  attron(A_BOLD);
+  warning.print(5,maxX/2-10);
+  attroff(COLOR_PAIR(7));
+  attroff(A_BOLD);
+  refresh();
+  usleep(500000);
+}*/
+/*WINDOW* texto=newwin(6, maxX-12, maxY-8,5);
+box(texto,0,0);
+refresh();
+wrefresh(texto);*/
