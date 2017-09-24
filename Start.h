@@ -25,5 +25,6 @@ public:
   vector<Element*> fillElements(); //Create elements
   vector<Animal*> fillAnimals(); //Create Animals
   void battle(vector<Kopemon*>); //Battle
+  vector<Kopemon*> Enemy();
   ~Start();
 };

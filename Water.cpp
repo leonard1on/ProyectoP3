@@ -5,6 +5,8 @@
 #include "Attack.h"
 #include "Offensive.h"
 #include "PowerUp.h"
+#include <stdlib.h>
+#include <time.h>
 #include <string>
 #include <typeinfo>
 #include <iostream>

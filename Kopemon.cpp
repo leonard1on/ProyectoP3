@@ -14,6 +14,7 @@ Kopemon::Kopemon(string pName, int pHp){
   name=pName;
   hp=pHp;
   status="Normal";
+  originalhp=pHp;
 }
 
 string Kopemon::getNombre(){
@@ -26,6 +27,10 @@ int Kopemon::getHp(){
 
 string Kopemon::getStatus(){
   return status;
+}
+
+int Kopemon::getOriginalHp(){
+  return originalhp;
 }
 
 void Kopemon::setNombre(string pName){
@@ -68,6 +73,10 @@ void Kopemon::Revive(Kopemon* kopemon){
 
 bool Kopemon::Accuracy(int accuracy){
   return true;
+}
+
+void Kopemon::curar(){
+  hp=originalhp;
 }
 
 Kopemon::~Kopemon(){

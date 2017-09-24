@@ -25,6 +25,8 @@
 #include "SoundFX.h"
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
+#include <stdlib.h>
+#include <time.h>
 #define maxX 150
 #define maxY 38
 
@@ -261,6 +263,20 @@ void Start::run(){
               }
             }break;
 
+            case KEY_RIGHT:{
+              seleccion+=8;
+              if (seleccion>kopemons.size()-1) {
+                seleccion-=8;
+              }
+            }break;
+
+            case KEY_LEFT:{
+              seleccion-=8;
+              if (seleccion<0) {
+                seleccion+=8;
+              }
+            }break;
+
             default:
               break;
           }
@@ -446,6 +462,20 @@ void Start::run(){
               }
             }break;
 
+            case KEY_RIGHT:{
+              seleccion+=8;
+              if (seleccion>kopemons.size()-1) {
+                seleccion-=8;
+              }
+            }break;
+
+            case KEY_LEFT:{
+              seleccion-=8;
+              if (seleccion<0) {
+                seleccion+=8;
+              }
+            }break;
+
             default:
               break;
           }
@@ -626,8 +656,9 @@ void Start::run(){
 }
 
 void Start::battle(vector<Kopemon*> kopemons){
+  srand (time(NULL));
   vector<Kopemon*> team1;
-  vector<Kopemon*> team2;
+  vector<Kopemon*> team2=Enemy();
   string location;
 
   //Music
@@ -700,6 +731,7 @@ void Start::battle(vector<Kopemon*> kopemons){
     wrefresh(team);
     werase(list);
   }
+
   //Erase everything
   werase(list);
   werase(team);
@@ -708,16 +740,19 @@ void Start::battle(vector<Kopemon*> kopemons){
   delwin(team);
   refresh();
   road.halt();
-  int a=(int)' ';
-  int b=(int)'^';
-  int c=(int)'<';
+
   //New stage
   Music batalla("./Music/Battle.wav");
   batalla.play();
   usleep(400000);
-  WINDOW* hud=newwin(8,50,maxY-16,0);
+  WINDOW* hud=newwin(8,46,maxY-16,0);
+  WINDOW* options=newwin(8, maxX/2-16, maxY-16,17);
+  keypad(options, true);
   WINDOW* texto=newwin(6, maxX-12, maxY-8,5);
+  int a=(int)' ';
+  int c=(int)'<';
 
+  //Fill Screen before battle
   for (size_t i = 0; i < maxY; i+=3) {
     for (size_t j = 0; j < maxX; j+=3) {
       mvprintw(i,j,"#");
@@ -729,28 +764,94 @@ void Start::battle(vector<Kopemon*> kopemons){
   }
   erase();
   refresh();
-  for (size_t i = 0; i < 90; i++) {
+
+  //Moving Kopemon HUD
+  for (size_t i = 0; i < 87; i++) {
     werase(hud);
     delwin(hud);
     erase();
     refresh();
-    WINDOW* hud=newwin(8,50,maxY-16,i);
-    wborder(hud, a, 0, a, 0, a, b, c, 0);
+    WINDOW* hud=newwin(8,46,maxY-16,i);
+    wborder(hud, a, 0, a, 0, a, a, c, 0);
     box(texto,0,0);
     wrefresh(hud);
     wrefresh(texto);
     usleep(30000);
   }
-
+  string choices[4] = {"Normal Attack", "Special Attack", "Switch", "Help"};
   do {
+    int choice=0;
+    int seleccion=0;
+    mvwprintw(hud, 1,15,"%s", team1.at(0)->getNombre().c_str());
+    mvwprintw(hud, 2,15,"%s", team1.at(0)->getStatus().c_str());
+    mvwprintw(hud, 3,20,":L 100");
+    mvwprintw(hud, 4,15,"HP: %d / %d", team1.at(0)->getHp(), team1.at(0)->getOriginalHp());
+    for (size_t i = 8; i < 45; i++) {
+      mvwprintw(hud,5,i,"_");
+    }
+    for (size_t i = 2; i < 45; i++) {
+      mvwprintw(hud,6,i,"=");
+    }
+    box(options,0,0);
+    wrefresh(hud);
 
+    mvwprintw(options, 2,4 ,"WHAT ARE YOU GOING TO DO?");
+    while (choice!=10) {
+      for (size_t i = 0; i < 4; i++) {
+        if(i<2){
+          if(i==seleccion)
+          wattron(options, A_REVERSE);
+          mvwprintw(options, i+4, 12, choices[i].c_str());
+          wattroff(options, A_REVERSE);
+        }else{
+          if(i==seleccion)
+          wattron(options, A_REVERSE);
+          mvwprintw(options, i+2, 38, choices[i].c_str());
+          wattroff(options, A_REVERSE);
+        }
+      }
+      choice=wgetch(options);
 
+      switch (choice) {
+        case KEY_UP:{
+          seleccion--;
+          if (seleccion<0) {
+            seleccion=0;
+          }
+        }break;
 
+        case KEY_DOWN:{
+          seleccion++;
+          if (seleccion>3) {
+            seleccion=3;
+          }
+        }break;
 
+        case KEY_RIGHT:{
+          seleccion+=2;
+          if (seleccion>3) {
+            seleccion-=2;
+          }
+        }break;
 
+        case KEY_LEFT:{
+          seleccion-=2;
+          if (seleccion<0) {
+            seleccion+=2;
+          }
+        }break;
 
+        default:
+          break;
+      }
+    }
 
+    if (choice==0) {
+      
+    }
 
+    wrefresh(options);
+    wrefresh(hud);
   } while(true);
   getch();
   batalla.halt();
@@ -766,7 +867,7 @@ vector<Kopemon*> Start::load(){
         kopemons.push_back(new Electric(new Offensive(50, 95, "Thundershock"), "Kipachu", 90));
       }
       if (line=="Riachu") {
-        kopemons.push_back(new Electric(new Offensive(70, 70, "Thunder"), "Riachu", 110));
+        kopemons.push_back(new Electric(new Offensive(75, 70, "Thunder"), "Riachu", 110));
       }
       if (line=="Marchander") {
         kopemons.push_back(new Fire(new Offensive(50, 90, "Ember"), new Offensive(100, 100, "Lava Plume"), "Marchander", 90));
@@ -1141,6 +1242,35 @@ vector<Element*> Start::fillElements(){
   elements.push_back(new Element("Air", 25));
   elements.push_back(new Element("Earth", 50));
   return elements;
+}
+
+vector<Kopemon*> Start::Enemy(){
+  vector<Kopemon*> enemy;
+
+  //First & Second Kopemon
+  int random=rand() %3 + 1;
+  if (random==1) {
+    enemy.push_back(new Fire(new Offensive(70, 75, "Fireblast"), new Offensive(110, 100, "Blastburn"), "Marchizard", 120));
+    enemy.push_back(new Electric(new Offensive(65, 80, "Thunderbolt"), "Zapeon", 100));
+  }else if(random==2){
+    enemy.push_back(new Water(new PowerUp(45, "Brine"), new Offensive(70, 75, "Hydro Pump"), "Vlazztois", 90));
+    enemy.push_back(new Electric(new Offensive(65, 80, "Thunderbolt"), "Zapeon", 100));
+  }else{
+    enemy.push_back(new Grass(new PowerUp(45, "Ingrain"), new Offensive(70, 75, "Giga Drain"), "Nevabaur", 90));
+    enemy.push_back(new Electric(new Offensive(75, 70, "Thunder"), "Riachu", 110));
+  }
+
+  //Third Kopemon
+  random=rand() %3 + 1;
+  if (random==1) {
+    enemy.push_back(new Fire(new Offensive(65, 80, "Flame Charge"), new Offensive(110, 100, "Fire Blitz"), "Blazeon", 100));
+  }else if(random==2){
+    enemy.push_back(new Water(new PowerUp(35, "Water Pulse"), new Offensive(65, 80, "Scald"), "Aqueon", 90));
+  }else{
+    enemy.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(65, 80, "Magical Leaf"), "Vineon", 90));
+  }
+
+  return enemy;
 }
 
 Start::~Start(){

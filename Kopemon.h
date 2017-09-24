@@ -10,6 +10,7 @@ protected:
   string name;
   int hp;
   string status;
+  int originalhp;
 
 public:
   Kopemon();
@@ -19,6 +20,7 @@ public:
   virtual string getNombre();
   virtual int getHp();
   virtual string getStatus();
+  int getOriginalHp();
   virtual void setNombre(string);
   virtual void setHp(int);
   virtual void setStatus(string);
@@ -31,4 +33,5 @@ public:
   virtual void Normal(Kopemon*);
   virtual void Revive(Kopemon*);
   virtual bool Accuracy(int);
+  void curar();
 };
