@@ -19,8 +19,9 @@ class Grass : public Kopemon{
     void setNormal(Offensive*);
 
     void Damage(Kopemon*);
-    void Special(Kopemon*);
-    void Normal(Kopemon*);
+    string Special(Kopemon*);
+    string Normal(Kopemon*);
     bool Accuracy(int);
+    bool Paralyzed(string);
     ~Grass();
 };

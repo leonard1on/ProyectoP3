@@ -3,6 +3,7 @@
 #include "Attack.h"
 #include "Offensive.h"
 #include "Object.h"
+#include <fstream>
 using namespace std;
 
 class Kopemon : public Object{
@@ -29,9 +30,10 @@ public:
 
   //Metodos de los Kopemon
   virtual void Damage(Kopemon*);
-  virtual void Special(Kopemon*);
-  virtual void Normal(Kopemon*);
+  virtual string Special(Kopemon*);
+  virtual string Normal(Kopemon*);
   virtual void Revive(Kopemon*);
   virtual bool Accuracy(int);
-  void curar();
+  virtual bool Paralyzed(string);
+  friend ostream& operator<<(ostream&, const Kopemon);
 };

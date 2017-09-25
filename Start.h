@@ -24,7 +24,7 @@ public:
   vector<Kopemon*> load(); //Load kopemons
   vector<Element*> fillElements(); //Create elements
   vector<Animal*> fillAnimals(); //Create Animals
-  void battle(vector<Kopemon*>); //Battle
+  int battle(vector<Kopemon*>); //Battle
   vector<Kopemon*> Enemy();
   ~Start();
 };

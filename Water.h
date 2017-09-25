@@ -22,9 +22,10 @@ class Water : public Kopemon{
     void setHp2(int);
 
     void Damage(Kopemon*);
-    void Special(Kopemon*);
-    void Normal(Kopemon*);
+    string Special(Kopemon*);
+    string Normal(Kopemon*);
     void Revive(Kopemon*);
     bool Accuracy(int);
+    bool Paralyzed(string);
     ~Water();
 };

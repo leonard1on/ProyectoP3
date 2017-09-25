@@ -39,8 +39,9 @@ void Grass::Damage(Kopemon* kopemon){
   }
 }
 
-void Grass::Special(Kopemon* kopemon){
+string Grass::Special(Kopemon* kopemon){
   int ataque=especial->getEffect();
+  string texto = ""+name+" used "+especial->getName()+".";
   hp=hp+especial->getEffect();
   if (hp>150) {
     hp=150;
@@ -54,21 +55,28 @@ void Grass::Special(Kopemon* kopemon){
 
   if (typeid(*kopemon)==typeid(Water)) {
     ataque=ataque*2;
+    texto+=" Its Super Effective!";
   }else if (typeid(*kopemon) == typeid(Fire)) {
     ataque=ataque/2;
+    texto+=" Its not very Effective!";
   }
 
   kopemon->setHp(kopemon->getHp()-ataque);
 
   if (typeid(*kopemon)==typeid(Water)) {
     kopemon->Revive(kopemon);
+    if(kopemon->getHp()>kopemon->getOriginalHp()){
+      kopemon->setHp(20);
+    }
   }
 
   kopemon->Damage(kopemon);
+  return texto+" It recovered a lot of HP!";
 }
 
-void Grass::Normal(Kopemon* kopemon){
+string Grass::Normal(Kopemon* kopemon){
   int ataque=normal->getDamage();
+  string texto = ""+name+" used "+normal->getName()+".";
   hp=hp+20;
   if (hp>150) {
     hp=150;
@@ -76,17 +84,34 @@ void Grass::Normal(Kopemon* kopemon){
 
   if (typeid(*kopemon)==typeid(Water)) {
     ataque=ataque*2;
+    texto+=" Its Super Effective!";
   }else if (typeid(*kopemon) == typeid(Fire)) {
     ataque=ataque/2;
+    texto+=" Its not very Effective!";
+  }
+  texto+= " It recovered some HP!";
+
+  if(!Accuracy(normal->getAccuracy())){
+    ataque=0;
+    texto = ""+name+" used "+normal->getName()+". But it missed the target...";
   }
 
   kopemon->setHp(kopemon->getHp()-ataque);
 
   if (typeid(*kopemon)==typeid(Water)) {
     kopemon->Revive(kopemon);
+    if(kopemon->getHp()>kopemon->getOriginalHp()){
+      kopemon->setHp(20);
+    }
+  }
+
+  if(!Paralyzed(status)){
+    ataque=0;
+    texto = ""+name+" used "+normal->getName()+". But its paralyzed and cant attack...";
   }
 
   kopemon->Damage(kopemon);
+  return texto;
 }
 
 bool Grass::Accuracy(int accuracy){
@@ -95,6 +120,18 @@ bool Grass::Accuracy(int accuracy){
   int random=rand() %100 + 1;
   if (accuracy < random) {
     hit=false;
+  }
+  return hit;
+}
+
+bool Grass::Paralyzed(string status){
+  bool hit=true;
+  srand (time(NULL));
+  if (status=="Paralyzed") {
+    int random=rand() %100 + 1;
+    if (random < 25) {
+      hit=false;
+    }
   }
   return hit;
 }

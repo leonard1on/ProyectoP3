@@ -61,6 +61,8 @@ void Start::run(){
     }else{
       stones.push_back(new Stone("Fire Stone", "Red"));
     }
+  }else{
+    stones.push_back(new Stone("Fire Stone", "Red"));
   }
 
   int choice=0;
@@ -624,16 +626,31 @@ void Start::run(){
       wrefresh(right);
       usleep(5000000);
     }
+
+    ofstream salida("Log.txt");
+    for (size_t i = 0; i < kopemons.size(); i++) {
+      salida<<*kopemons.at(i);
+    }
+
   }//End of while
   music.halt();
   delwin(left);
   delwin(right);
   clear();
   refresh();
-
+  int ganar=0;
   //Pelea
   if (kopemons.size()==16) {
-    battle(kopemons);
+    ganar=battle(kopemons);
+    if (ganar==2) {
+      Music ending("./Music/Ending.wav");
+      ending.play();
+      mvprintw(maxY/2, maxX/3, "Thank you for playing Kopemon Crimson Version!");
+      mvprintw(maxY/2+1, maxX/3, "You are a true Kopemon Trainer");
+      refresh();
+      usleep(5000000);
+      ending.halt();
+    }
   }
 
   //End
@@ -651,11 +668,13 @@ void Start::run(){
     delete stones.at(i);
   }
   stones.clear();
+  mvprintw(maxY/2+2, maxX/3, "The End");
+  refresh();
   getch();
   endwin();
 }
 
-void Start::battle(vector<Kopemon*> kopemons){
+int Start::battle(vector<Kopemon*> kopemons){
   srand (time(NULL));
   vector<Kopemon*> team1;
   vector<Kopemon*> team2=Enemy();
@@ -746,11 +765,16 @@ void Start::battle(vector<Kopemon*> kopemons){
   batalla.play();
   usleep(400000);
   WINDOW* hud=newwin(8,46,maxY-16,0);
+  WINDOW* hud2=newwin(8,46,1,88);
   WINDOW* options=newwin(8, maxX/2-16, maxY-16,17);
   keypad(options, true);
   WINDOW* texto=newwin(6, maxX-12, maxY-8,5);
   int a=(int)' ';
+  int b=(int)'>';
   int c=(int)'<';
+  int enemy=0;
+  int resp;
+  int salida=0;
 
   //Fill Screen before battle
   for (size_t i = 0; i < maxY; i+=3) {
@@ -764,37 +788,94 @@ void Start::battle(vector<Kopemon*> kopemons){
   }
   erase();
   refresh();
+  mvwprintw(texto, 1, 3, "Battle Log:");
+  mvwprintw(texto,3,3, "Trainer Red wants to battle you!" );
 
-  //Moving Kopemon HUD
+  //Moving Kopemon HUDS
   for (size_t i = 0; i < 87; i++) {
     werase(hud);
+    werase(hud2);
+    delwin(hud2);
     delwin(hud);
     erase();
     refresh();
     WINDOW* hud=newwin(8,46,maxY-16,i);
+    WINDOW* hud2=newwin(8,46,2,88-i);
     wborder(hud, a, 0, a, 0, a, a, c, 0);
+    wborder(hud2, 0, a, a, 0, a, a, 0, b);
     box(texto,0,0);
     wrefresh(hud);
+    wrefresh(hud2);
     wrefresh(texto);
     usleep(30000);
   }
   string choices[4] = {"Normal Attack", "Special Attack", "Switch", "Help"};
+  //Create HUD2 Information
+  wborder(hud2, 0, a, a, 0, a, a, 0, b);
+  mvwprintw(hud2, 1,15,"%s", team2.at(0)->getNombre().c_str());
+  mvwprintw(hud2, 2,15,"%s", team2.at(0)->getStatus().c_str());
+  mvwprintw(hud2, 3,20,":L 100");
+  mvwprintw(hud2, 4,15,"HP: %d / %d", team2.at(0)->getHp(), team2.at(0)->getOriginalHp());
+  for (size_t i = 1; i < 38; i++) {
+    mvwprintw(hud2,5,i,"_");
+  }
+  for (size_t i = 1; i < 43; i++) {
+    wattron(hud2, COLOR_PAIR(6));
+    mvwprintw(hud2,6,i,"=");
+    wattroff(hud2, COLOR_PAIR(6));
+  }
+  wrefresh(hud2);
+
+  //Battle Start!!!!
   do {
+    //Variables
     int choice=0;
     int seleccion=0;
-    mvwprintw(hud, 1,15,"%s", team1.at(0)->getNombre().c_str());
-    mvwprintw(hud, 2,15,"%s", team1.at(0)->getStatus().c_str());
-    mvwprintw(hud, 3,20,":L 100");
-    mvwprintw(hud, 4,15,"HP: %d / %d", team1.at(0)->getHp(), team1.at(0)->getOriginalHp());
-    for (size_t i = 8; i < 45; i++) {
-      mvwprintw(hud,5,i,"_");
-    }
-    for (size_t i = 2; i < 45; i++) {
-      mvwprintw(hud,6,i,"=");
-    }
-    box(options,0,0);
-    wrefresh(hud);
+    wborder(hud, a, 0, a, 0, a, a, c, 0);
+    box(texto,0,0);
+    mvwprintw(texto, 1, 3, "Battle Log:");
+    wrefresh(texto);
 
+    //Create HUD Information
+    if(true){
+      werase(hud);
+      wborder(hud, a, 0, a, 0, a, a, c, 0);
+      mvwprintw(hud, 1,15,"%s", team1.at(0)->getNombre().c_str());
+      mvwprintw(hud, 2,15,"%s", team1.at(0)->getStatus().c_str());
+      mvwprintw(hud, 3,20,":L 100");
+      mvwprintw(hud, 4,15,"HP: %d / %d", team1.at(0)->getHp(), team1.at(0)->getOriginalHp());
+      for (size_t i = 8; i < 45; i++) {
+        mvwprintw(hud,5,i,"_");
+      }
+      for (size_t i = 2; i < 45; i++) {
+        wattron(hud, COLOR_PAIR(6));
+        mvwprintw(hud,6,i,"=");
+        wattroff(hud, COLOR_PAIR(6));
+      }
+      box(options,0,0);
+      wrefresh(hud);
+    }
+
+    //Create HUD2 Information
+    if(true){
+      werase(hud2);
+      wborder(hud2, 0, a, a, 0, a, a, 0, b);
+      mvwprintw(hud2, 1,15,"%s", team2.at(0)->getNombre().c_str());
+      mvwprintw(hud2, 2,15,"%s", team2.at(0)->getStatus().c_str());
+      mvwprintw(hud2, 3,20,":L 100");
+      mvwprintw(hud2, 4,15,"HP: %d / %d", team2.at(0)->getHp(), team2.at(0)->getOriginalHp());
+      for (size_t i = 1; i < 38; i++) {
+        mvwprintw(hud2,5,i,"_");
+      }
+      for (size_t i = 1; i < 43; i++) {
+        wattron(hud2, COLOR_PAIR(6));
+        mvwprintw(hud2,6,i,"=");
+        wattroff(hud2, COLOR_PAIR(6));
+      }
+      wrefresh(hud2);
+    }
+
+    //Options Player
     mvwprintw(options, 2,4 ,"WHAT ARE YOU GOING TO DO?");
     while (choice!=10) {
       for (size_t i = 0; i < 4; i++) {
@@ -846,15 +927,253 @@ void Start::battle(vector<Kopemon*> kopemons){
       }
     }
 
-    if (choice==0) {
-      
+    //Normal Attack
+    if (seleccion==0) {
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 3, "%s", team1.at(0)->Normal(team2.at(0)).c_str());
+    }
+    //Special Attack
+    if (seleccion==1) {
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 3, "%s", team1.at(0)->Special(team2.at(0)).c_str());
+    }
+    //Switch
+    if (seleccion==2) {
+      werase(options);
+      wrefresh(options);
+      choice=0;
+      seleccion=1;
+      while (choice!=10) {
+        mvwprintw(options, 2,4 ,"Which are you going to switch?");
+        for (size_t i = 1; i < team1.size(); i++) {
+          box(options, 0,0);
+          if(i==seleccion)
+          wattron(options, A_REVERSE);
+          mvwprintw(options, i+3, 12, team1.at(i)->getNombre().c_str());
+          wattroff(options, A_REVERSE);
+        }
+        choice=wgetch(options);
+
+        switch (choice) {
+          case KEY_UP:{
+            seleccion--;
+            if (seleccion<1) {
+              seleccion=1;
+            }
+          }break;
+
+          case KEY_DOWN:{
+            seleccion++;
+            if (seleccion>team1.size()-1) {
+              seleccion=team1.size()-1;
+            }
+          }break;
+
+          default:
+            break;
+        }
+      }
+
+      Kopemon* nuevo = team1.at(seleccion);
+      team1.erase(team1.begin()+seleccion);
+      team1.insert(team1.begin(), nuevo);
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 3, "You Switched out your Kopemon. Go %s, you can do it!", team1.at(0)->getNombre().c_str());
     }
 
+    if (seleccion==3) {
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 43, "%s", typeid(team1.at(0)).name());
+      mvwprintw(texto, 3, 3, "Fire->Grass->Water->Water Electric->Water / Water revives, Grass heals, Electric Paralyzes, Fire Superattacks");
+    }
+    mvwprintw(texto, 4, 3, "[Press Enter]");
+    wrefresh(texto);
+    do {
+      resp=wgetch(texto);
+    } while(resp!=10);
+    werase(texto);
+    werase(options);
+    box(texto,0,0);
     wrefresh(options);
-    wrefresh(hud);
-  } while(true);
-  getch();
+
+    //Remove  if fainted
+    if(team2.at(0)->getStatus()!="Fainted"){
+      //Enemy
+      enemy=rand()%2+1;
+      //Refresh Enemy HUD
+      if(true){
+        werase(hud2);
+        wborder(hud2, 0, a, a, 0, a, a, 0, b);
+        mvwprintw(hud2, 1,15,"%s", team2.at(0)->getNombre().c_str());
+        mvwprintw(hud2, 2,15,"%s", team2.at(0)->getStatus().c_str());
+        mvwprintw(hud2, 3,20,":L 100");
+        mvwprintw(hud2, 4,15,"HP: %d / %d", team2.at(0)->getHp(), team2.at(0)->getOriginalHp());
+        for (size_t i = 1; i < 38; i++) {
+          mvwprintw(hud2,5,i,"_");
+        }
+        for (size_t i = 1; i < 43; i++) {
+          wattron(hud2, COLOR_PAIR(6));
+          mvwprintw(hud2,6,i,"=");
+          wattroff(hud2, COLOR_PAIR(6));
+        }
+        wrefresh(hud2);
+      }
+      //Normal Attack
+      if (enemy==1) {
+        werase(texto);
+        box(texto,0,0);
+        mvwprintw(texto, 1, 3, "Battle Log:");
+        mvwprintw(texto, 3, 3, "%s", team2.at(0)->Normal(team1.at(0)).c_str());
+      }
+      //Special Attack
+      if (enemy==2) {
+        werase(texto);
+        box(texto,0,0);
+        mvwprintw(texto, 1, 3, "Battle Log:");
+        mvwprintw(texto, 3, 3, "%s", team2.at(0)->Special(team1.at(0)).c_str());
+      }
+      mvwprintw(texto, 4, 3, "[Press Enter]");
+      wrefresh(texto);
+      do {
+        resp=wgetch(texto);
+      } while(resp!=10);
+      //Refresh Enemy HUD
+      if(true){
+        werase(hud2);
+        wborder(hud2, 0, a, a, 0, a, a, 0, b);
+        mvwprintw(hud2, 1,15,"%s", team2.at(0)->getNombre().c_str());
+        mvwprintw(hud2, 2,15,"%s", team2.at(0)->getStatus().c_str());
+        mvwprintw(hud2, 3,20,":L 100");
+        mvwprintw(hud2, 4,15,"HP: %d / %d", team2.at(0)->getHp(), team2.at(0)->getOriginalHp());
+        for (size_t i = 1; i < 38; i++) {
+          mvwprintw(hud2,5,i,"_");
+        }
+        for (size_t i = 1; i < 43; i++) {
+          wattron(hud2, COLOR_PAIR(6));
+          mvwprintw(hud2,6,i,"=");
+          wattroff(hud2, COLOR_PAIR(6));
+        }
+        wrefresh(hud2);
+      }
+    }else{
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 3, "%s has fainted. Changing Kopemon", team2.at(0)->getNombre().c_str());
+
+      //Refresh Enemy HUD
+      if(true){
+        werase(hud2);
+        wborder(hud2, 0, a, a, 0, a, a, 0, b);
+        mvwprintw(hud2, 1,15,"%s", team2.at(0)->getNombre().c_str());
+        mvwprintw(hud2, 2,15,"%s", team2.at(0)->getStatus().c_str());
+        mvwprintw(hud2, 3,20,":L 100");
+        mvwprintw(hud2, 4,15,"HP: %d / %d", team2.at(0)->getHp(), team2.at(0)->getOriginalHp());
+        for (size_t i = 1; i < 38; i++) {
+          mvwprintw(hud2,5,i,"_");
+        }
+        for (size_t i = 1; i < 43; i++) {
+          wattron(hud2, COLOR_PAIR(6));
+          mvwprintw(hud2,6,i,"=");
+          wattroff(hud2, COLOR_PAIR(6));
+        }
+        wrefresh(hud2);
+      }
+      team2.erase(team2.begin());
+      mvwprintw(texto, 4, 3, "[Press Enter]");
+      wrefresh(texto);
+      do {
+        resp=wgetch(texto);
+      } while(resp!=10);
+    }
+
+    //Remove Fainted Kopemon
+    if (team1.at(0)->getStatus()=="Fainted") {
+      werase(texto);
+      box(texto,0,0);
+      mvwprintw(texto, 1, 3, "Battle Log:");
+      mvwprintw(texto, 3, 3, "%s has fainted. Changing Kopemon", team1.at(0)->getNombre().c_str());
+      //Create HUD Information
+      if(true){
+        werase(hud);
+        mvwprintw(hud, 1,15,"%s", team1.at(0)->getNombre().c_str());
+        mvwprintw(hud, 2,15,"%s", team1.at(0)->getStatus().c_str());
+        mvwprintw(hud, 3,20,":L 100");
+        mvwprintw(hud, 4,15,"HP: %d / %d", team1.at(0)->getHp(), team1.at(0)->getOriginalHp());
+        for (size_t i = 8; i < 45; i++) {
+          mvwprintw(hud,5,i,"_");
+        }
+        for (size_t i = 2; i < 45; i++) {
+          wattron(hud, COLOR_PAIR(6));
+          mvwprintw(hud,6,i,"=");
+          wattroff(hud, COLOR_PAIR(6));
+        }
+        box(options,0,0);
+        wrefresh(hud);
+      }
+      team1.erase(team1.begin());
+      mvwprintw(texto, 4, 3, "[Press Enter]");
+      wrefresh(texto);
+      do {
+        resp=wgetch(texto);
+      } while(resp!=10);
+    }
+
+    //Exit
+    if (team2.size()==0) {
+      salida=2;
+    }
+    if(team1.size()==0){
+      salida=1;
+    }
+    werase(hud);
+
+  } while(salida==0); //Fin de la batalla
+
   batalla.halt();
+  if (salida==1) {
+    werase(texto);
+    box(texto,0,0);
+    mvwprintw(texto, 1, 3, "Battle Log:");
+    mvwprintw(texto, 3, 3, "You don't have anymore Kopemon left, you are a loser!");
+    mvwprintw(texto, 4, 3, "[Press Enter]");
+    wrefresh(texto);
+    do {
+      resp=wgetch(texto);
+    } while(resp!=10);
+    team2.clear();
+  }
+
+  if (salida==2) {
+    Music victory("./Music/Victory.wav");
+    victory.play();
+    werase(texto);
+    box(texto,0,0);
+    mvwprintw(texto, 1, 3, "Battle Log:");
+    mvwprintw(texto, 2, 3, "Trainer Red: How can this be! You cheated right?");
+    mvwprintw(texto, 3, 3, "You are now the Kopemon Champion");
+    mvwprintw(texto, 4, 3, "[Press Enter]");
+    wrefresh(texto);
+    do {
+      resp=wgetch(texto);
+    } while(resp!=10);
+    victory.halt();
+    team1.clear();
+  }
+  erase();
+  delwin(hud);
+  delwin(hud2);
+  delwin(texto);
+  delwin(options);
+  return salida;
 }
 
 vector<Kopemon*> Start::load(){
@@ -882,19 +1201,19 @@ vector<Kopemon*> Start::load(){
         kopemons.push_back(new Water(new PowerUp(30, "Bubble"), new Offensive(50, 90, "Water Gun"), "Escuirtol", 90));
       }
       if (line=="Guarturtol") {
-        kopemons.push_back(new Water(new PowerUp(35, "Bubblebeam"), new Offensive(60, 85, "Surf"), "Guarturtol", 90));
+        kopemons.push_back(new Water(new PowerUp(35, "Bubblebeam"), new Offensive(60, 85, "Surf"), "Guarturtol", 100));
       }
       if (line=="Vlazztois") {
-        kopemons.push_back(new Water(new PowerUp(45, "Brine"), new Offensive(70, 75, "Hydro Pump"), "Vlazztois", 90));
+        kopemons.push_back(new Water(new PowerUp(45, "Brine"), new Offensive(70, 75, "Hydro Pump"), "Vlazztois", 120));
       }
       if (line=="Sulsabaur") {
         kopemons.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(50, 90, "Absorb"), "Sulsabaur", 90));
       }
       if (line=="Ivybaur") {
-        kopemons.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(60, 85, "Mega Drain"), "Ivybaur", 90));
+        kopemons.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(60, 85, "Mega Drain"), "Ivybaur", 100));
       }
       if (line=="Nevabaur") {
-        kopemons.push_back(new Grass(new PowerUp(45, "Ingrain"), new Offensive(70, 75, "Giga Drain"), "Nevabaur", 90));
+        kopemons.push_back(new Grass(new PowerUp(45, "Ingrain"), new Offensive(70, 75, "Giga Drain"), "Nevabaur", 120));
       }
       if (line=="Veev") {
         kopemons.push_back(new Kopemon("Veev", 60));
@@ -906,10 +1225,10 @@ vector<Kopemon*> Start::load(){
         kopemons.push_back(new Fire(new Offensive(65, 80, "Flame Charge"), new Offensive(110, 100, "Fire Blitz"), "Blazeon", 100));
       }
       if (line=="Aqueon") {
-        kopemons.push_back(new Water(new PowerUp(35, "Water Pulse"), new Offensive(65, 80, "Scald"), "Aqueon", 90));
+        kopemons.push_back(new Water(new PowerUp(35, "Water Pulse"), new Offensive(65, 80, "Scald"), "Aqueon", 100));
       }
       if (line=="Vineon") {
-        kopemons.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(65, 80, "Magical Leaf"), "Vineon", 90));
+        kopemons.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(65, 80, "Magical Leaf"), "Vineon", 100));
       }
     }
     load.close();
@@ -1063,7 +1382,7 @@ vector<Kopemon*> Start::title(){
   //Choices
   WINDOW* menu=newwin(6, 28, 27, 62);
   keypad(menu, true);
-  string choices[3] = {"New File", "Load File", "Exit Game"};
+  string choices[3] = {"New File", "Load File", "Help"};
   int choice=0;
   int seleccion=0;
   int a=(int)' ';
@@ -1253,10 +1572,10 @@ vector<Kopemon*> Start::Enemy(){
     enemy.push_back(new Fire(new Offensive(70, 75, "Fireblast"), new Offensive(110, 100, "Blastburn"), "Marchizard", 120));
     enemy.push_back(new Electric(new Offensive(65, 80, "Thunderbolt"), "Zapeon", 100));
   }else if(random==2){
-    enemy.push_back(new Water(new PowerUp(45, "Brine"), new Offensive(70, 75, "Hydro Pump"), "Vlazztois", 90));
+    enemy.push_back(new Water(new PowerUp(45, "Brine"), new Offensive(70, 75, "Hydro Pump"), "Vlazztois", 120));
     enemy.push_back(new Electric(new Offensive(65, 80, "Thunderbolt"), "Zapeon", 100));
   }else{
-    enemy.push_back(new Grass(new PowerUp(45, "Ingrain"), new Offensive(70, 75, "Giga Drain"), "Nevabaur", 90));
+    enemy.push_back(new Grass(new PowerUp(45, "Ingrain"), new Offensive(70, 75, "Giga Drain"), "Nevabaur", 120));
     enemy.push_back(new Electric(new Offensive(75, 70, "Thunder"), "Riachu", 110));
   }
 
@@ -1265,9 +1584,9 @@ vector<Kopemon*> Start::Enemy(){
   if (random==1) {
     enemy.push_back(new Fire(new Offensive(65, 80, "Flame Charge"), new Offensive(110, 100, "Fire Blitz"), "Blazeon", 100));
   }else if(random==2){
-    enemy.push_back(new Water(new PowerUp(35, "Water Pulse"), new Offensive(65, 80, "Scald"), "Aqueon", 90));
+    enemy.push_back(new Water(new PowerUp(35, "Water Pulse"), new Offensive(65, 80, "Scald"), "Aqueon", 100));
   }else{
-    enemy.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(65, 80, "Magical Leaf"), "Vineon", 90));
+    enemy.push_back(new Grass(new PowerUp(40, "Synthesis"), new Offensive(65, 80, "Magical Leaf"), "Vineon", 100));
   }
 
   return enemy;
@@ -1275,23 +1594,3 @@ vector<Kopemon*> Start::Enemy(){
 
 Start::~Start(){
 }
-
-/*SoundFX challenger("./SoundFX/Challenger.wav");
-Scanner warning("./Dibujos/Warning.txt");
-challenger.play();
-for (size_t i = 0; i < 6; i++) {
-  clear();
-  refresh();
-  usleep(300000);
-  attron(COLOR_PAIR(7));
-  attron(A_BOLD);
-  warning.print(5,maxX/2-10);
-  attroff(COLOR_PAIR(7));
-  attroff(A_BOLD);
-  refresh();
-  usleep(500000);
-}*/
-/*WINDOW* texto=newwin(6, maxX-12, maxY-8,5);
-box(texto,0,0);
-refresh();
-wrefresh(texto);*/

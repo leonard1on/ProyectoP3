@@ -4,6 +4,7 @@
 #include "Offensive.h"
 #include <string>
 #include <typeinfo>
+#include <fstream>
 using namespace std;
 
 Kopemon::Kopemon() : Object(){
@@ -54,15 +55,38 @@ void Kopemon::setNormal(Offensive* offensive){
 }
 
 void Kopemon::Damage(Kopemon* kopemon){
+  if (kopemon->getHp()<=0) {
+    status="Fainted";
+    hp=0;
+  }
+}
+
+string Kopemon::Special(Kopemon* kopemon){
+  int ataque=50;
+  string texto = ""+name+" used special attack.";
+
+  kopemon->setHp(kopemon->getHp()-ataque);
+
+  if (typeid(*kopemon)==typeid(Water)) {
+    kopemon->Revive(kopemon);
+  }
+
   kopemon->Damage(kopemon);
+  return texto;
 }
 
-void Kopemon::Special(Kopemon* kopemon){
-  kopemon->setHp(kopemon->getHp() - 50);
-}
+string Kopemon::Normal(Kopemon* kopemon){
+  int ataque=50;
+  string texto = ""+name+" used normal attack.";
 
-void Kopemon::Normal(Kopemon* kopemon){
-  kopemon->setHp(kopemon->getHp() - 50);
+  kopemon->setHp(kopemon->getHp()-ataque);
+
+  if (typeid(*kopemon)==typeid(Water)) {
+    kopemon->Revive(kopemon);
+  }
+
+  kopemon->Damage(kopemon);
+  return texto;
 }
 
 void Kopemon::Revive(Kopemon* kopemon){
@@ -75,9 +99,23 @@ bool Kopemon::Accuracy(int accuracy){
   return true;
 }
 
-void Kopemon::curar(){
-  hp=originalhp;
+bool Kopemon::Paralyzed(string status){
+  bool hit=true;
+  srand (time(NULL));
+  if (status=="Paralyzed") {
+    int random=rand() %100 + 1;
+    if (random < 25) {
+      hit=false;
+    }
+  }
+  return hit;
 }
+
+ostream& operator<<(ostream& out, const Kopemon kopemon){
+  out<<kopemon.name<<"\n";
+}
+
+
 
 Kopemon::~Kopemon(){
 
