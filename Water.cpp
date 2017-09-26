@@ -67,13 +67,7 @@ string Water::Special(Kopemon* kopemon){
       kopemon->setHp(20);
     }
   }
-
-  if(kopemon->getHp()>kopemon->getOriginalHp()){
-    kopemon->setHp(20);
-  }
-  if(kopemon->getHp()!=kopemon->getOriginalHp()){
-    kopemon->setHp(kopemon->getOriginalHp());
-  }
+  
   kopemon->Damage(kopemon);
   return texto + " It can now revive";
 }

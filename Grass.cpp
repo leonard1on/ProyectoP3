@@ -96,6 +96,11 @@ string Grass::Normal(Kopemon* kopemon){
     texto = ""+name+" used "+normal->getName()+". But it missed the target...";
   }
 
+  if(!Paralyzed(status)){
+    ataque=0;
+    texto = ""+name+" used "+normal->getName()+". But its paralyzed and cant attack...";
+  }
+
   kopemon->setHp(kopemon->getHp()-ataque);
 
   if (typeid(*kopemon)==typeid(Water)) {
@@ -103,11 +108,6 @@ string Grass::Normal(Kopemon* kopemon){
     if(kopemon->getHp()>kopemon->getOriginalHp()){
       kopemon->setHp(20);
     }
-  }
-
-  if(!Paralyzed(status)){
-    ataque=0;
-    texto = ""+name+" used "+normal->getName()+". But its paralyzed and cant attack...";
   }
 
   kopemon->Damage(kopemon);
